@@ -19,6 +19,7 @@ android {
         versionName "1.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         
+        multiDexEnabled true
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86" ,  "x86_64"
         }
@@ -38,10 +39,26 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
+    
+    //按abi拆分包
+    splits {
+        abi {
+            enable true
+            reset()
+            //支持的ABIs
+            include 'armeabi-v7a', 'arm64-v8a', "x86" ,  "x86_64" 
+            //要不要一个全量ABIs的包
+            universalApk true 
+        }
+    }
+    
     applicationVariants.all { variant ->
-        variant.outputs.all {
+        variant.outputs.all { output ->
+            def abi = output.getFilter(com.android.build.OutputFile.ABI)
+            if (abi == null) abi = "all"
+            
             def fileName = project.name + '-' + variant.name + '-V' +
-                    defaultConfig.versionCode + ".apk"
+                    defaultConfig.versionCode + '-' + abi + ".apk"
             outputFileName = fileName
         }
     }
